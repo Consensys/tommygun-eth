@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.web3j.crypto.Credentials;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.http.HttpService;
 
@@ -27,7 +28,8 @@ public class TommyGunBeanFactory {
   @Bean
   public AccountCreatorService accountCreatorService(
       @Autowired final Web3j web3j, @Autowired final TaskService taskService) {
-    return new AccountCreatorService(web3j, accountCreatorPrivateKey, taskService);
+    return new AccountCreatorService(
+        web3j, Credentials.create(accountCreatorPrivateKey), taskService);
   }
 
   @Bean
