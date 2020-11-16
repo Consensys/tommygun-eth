@@ -43,6 +43,8 @@ public class FireService {
             taskID,
             fireRequest.getAccountNumber(),
             (subTaskID, newStatus) -> this.onSubTaskStatusChange(rootTask, subTaskID, newStatus));
+    rootTask.addSubTask(accountCreationTask);
+    taskRepository.save(rootTask);
   }
 
   public void onSubTaskStatusChange(

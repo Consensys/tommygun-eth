@@ -23,4 +23,10 @@ public interface TaskAPI {
   @GetMapping(path = "/")
   @ResponseBody
   List<TaskResponse> findAll();
+
+  @Operation(summary = "Find tasks by status")
+  @GetMapping(path = "/status/{taskStatus}")
+  @ResponseBody
+  List<TaskResponse> findByStatus(
+      @Parameter(description = "task status") @PathVariable String taskStatus);
 }

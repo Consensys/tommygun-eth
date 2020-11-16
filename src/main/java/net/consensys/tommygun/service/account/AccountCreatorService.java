@@ -22,18 +22,19 @@ public class AccountCreatorService {
       final UUID parentTaskID,
       final long accountNumber,
       final StatusChangeListener statusChangeListener) {
-    return taskService.newTask(
-        UUID.randomUUID(),
-        String.format(TaskType.CREATE_ACCOUNT.getType(), accountNumber),
-        () -> this.create(accountNumber),
-        Optional.of(parentTaskID));
+    final Task task =
+        taskService.newTask(
+            UUID.randomUUID(),
+            String.format(TaskType.CREATE_ACCOUNT.getType(), accountNumber),
+            () -> this.create(accountNumber),
+            Optional.of(parentTaskID));
+    task.addStatusChangeListener(statusChangeListener);
+    return task;
   }
 
   public void create(final long accountNumber) {
     log.info("starting creation of {} accounts.", accountNumber);
     try {
-      Thread.sleep(10000);
-      log.info("accounts created.");
     } catch (Throwable e) {
       throw new RuntimeException(e);
     }

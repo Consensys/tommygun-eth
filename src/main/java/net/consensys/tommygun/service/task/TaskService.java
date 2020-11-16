@@ -44,9 +44,9 @@ public class TaskService {
     try {
       log.info("starting task [{}]", task.getTaskID().toString());
       task.getTaskProcess().run();
-      if (!task.getSubTasks().isEmpty()) {
+      if (task.getSubTasks().isEmpty()) {
         log.info("task [{}] completed", task.getTaskID().toString());
-        task.setStatus(TaskStatus.SUCCESS);
+        task.updateStatus(TaskStatus.SUCCESS);
       }
     } catch (final RuntimeException e) {
       log.error("task [{}] caused error: {}", task.getTaskID().toString(), e.getMessage());

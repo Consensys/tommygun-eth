@@ -25,7 +25,7 @@ public class Task {
   @Builder.Default private List<StatusChangeListener> statusChangeListeners = new ArrayList<>();
 
   public void error(final String errorMessage) {
-    this.setStatus(TaskStatus.ERROR);
+    this.updateStatus(TaskStatus.ERROR);
     this.setErrorMessage(errorMessage);
   }
 
@@ -36,5 +36,9 @@ public class Task {
 
   public void addStatusChangeListener(final StatusChangeListener listener) {
     this.statusChangeListeners.add(listener);
+  }
+
+  public void addSubTask(final Task task) {
+    this.subTasks.add(task);
   }
 }

@@ -25,4 +25,12 @@ public class TaskController implements TaskAPI {
   public List<TaskResponse> findAll() {
     return repository.findAll().stream().map(TaskResponse::new).collect(Collectors.toList());
   }
+
+  @Override
+  public List<TaskResponse> findByStatus(final String taskStatus) {
+    return repository.findAll().stream()
+        .filter(task -> task.getStatus().name().equalsIgnoreCase(taskStatus))
+        .map(TaskResponse::new)
+        .collect(Collectors.toList());
+  }
 }
