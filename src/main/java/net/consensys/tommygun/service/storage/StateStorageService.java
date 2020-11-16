@@ -1,5 +1,7 @@
 package net.consensys.tommygun.service.storage;
 
+import java.net.ConnectException;
+
 import lombok.extern.slf4j.Slf4j;
 import net.consensys.tommygun.boot.StateStorageServiceConfiguration;
 import net.consensys.tommygun.contract.wrapper.KeyValueStore;
@@ -10,8 +12,6 @@ import org.springframework.stereotype.Service;
 import org.web3j.crypto.Credentials;
 import org.web3j.protocol.Web3j;
 import org.web3j.tx.gas.DefaultGasProvider;
-
-import java.net.ConnectException;
 
 @Service
 @Slf4j
@@ -43,5 +43,4 @@ public class StateStorageService {
       throw new RuntimeException(e);
     }
   }
-
 }
