@@ -59,6 +59,7 @@ public class StateStorageService {
             DefaultGasProvider.GAS_LIMIT,
             BigInteger.ZERO,
             KeyValueStore.BINARY);
+    // TODO configurable chain id
     final long chainID = 12;
     final byte[] signedTransaction =
         TransactionEncoder.signMessage(
