@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequestMapping(path = "/fire", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "Fire API", description = "Fire Web API documentation")
 public interface FireAPI {
-  @Operation(summary = "Submit a legacy Ethereum transaction")
+  @Operation(summary = "Start generating the large state testnet")
   @PostMapping
   FireResponse fire(@Valid @RequestBody final FireRequest fireRequest);
 }

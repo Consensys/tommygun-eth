@@ -4,4 +4,5 @@ binFile=$1
 abiFile=$2
 javaOutputFiles=$3
 packageName=$4
-epirus solidity generate -b "$binFile" -a "$abiFile" -o "$javaOutputFiles" -p "$packageName"
+#epirus solidity generate -b "$binFile" -a "$abiFile" -o "$javaOutputFiles" -p "$packageName"
+web3j solidity generate -b "$binFile" -a "$abiFile" -o "$javaOutputFiles" -p "$packageName"
