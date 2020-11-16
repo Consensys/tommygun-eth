@@ -1,5 +1,6 @@
 package net.consensys.tommygun.service.task;
 
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
@@ -32,6 +33,7 @@ public class TaskService {
             .taskID(taskID)
             .name(name)
             .status(TaskStatus.PENDING)
+            .startedAt(Instant.now())
             .parentTaskID(parentTaskID)
             .taskProcess(taskProcess)
             .build();
@@ -46,11 +48,12 @@ public class TaskService {
       task.getTaskProcess().run();
       if (task.getSubTasks().isEmpty()) {
         log.info("task [{}] completed", task.getTaskID().toString());
-        task.updateStatus(TaskStatus.SUCCESS);
+        task.endWithStatus(TaskStatus.SUCCESS);
       }
     } catch (final RuntimeException e) {
       log.error("task [{}] caused error: {}", task.getTaskID().toString(), e.getMessage());
       task.error(e.getMessage());
+      task.endWithStatus(TaskStatus.ERROR);
     } finally {
       repository.save(task);
     }

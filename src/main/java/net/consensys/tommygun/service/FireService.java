@@ -72,7 +72,7 @@ public class FireService {
         errorCount++;
       }
     }
-    rootTask.setStatus(errorCount == 0 ? TaskStatus.SUCCESS : TaskStatus.ERROR);
+    rootTask.endWithStatus(errorCount == 0 ? TaskStatus.SUCCESS : TaskStatus.ERROR);
     taskRepository.save(rootTask);
   }
 }

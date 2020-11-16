@@ -1,5 +1,7 @@
 package net.consensys.tommygun.model.task;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -19,6 +21,9 @@ public class Task {
   @Builder.Default private Optional<UUID> parentTaskID = Optional.empty();
   @Builder.Default private List<Task> subTasks = new ArrayList<>();
   private TaskStatus status;
+  private Instant startedAt;
+  private Instant endedAt;
+  private Long durationMillis;
   private String name;
   private String errorMessage;
   private Runnable taskProcess;
@@ -40,5 +45,14 @@ public class Task {
 
   public void addSubTask(final Task task) {
     this.subTasks.add(task);
+  }
+
+  public void endWithStatus(final TaskStatus status) {
+    if (!status.isFinalStatus()) {
+      throw new RuntimeException("cannot end task with non final status");
+    }
+    this.updateStatus(status);
+    this.setEndedAt(Instant.now());
+    this.setDurationMillis(Duration.between(getStartedAt(), getEndedAt()).toMillis());
   }
 }
