@@ -22,13 +22,13 @@ Build large state Ethereum testnet using standalone HTTP service connected to an
 ## Usage
 
 ```shell script
-java -jar java -jar build/libs/tommygun-eth.jar
+java -jar java -jar build/libs/tommygun-eth.jar --rpc-url=http://127.0.0.1:8545
 ```
 
 OR
 
 ```shell script
-./gradlew bootRun
+./gradlew bootRun --args="--rpc-url=http://127.0.0.1:8545"
 ```
 
 ## Code Style
