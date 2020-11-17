@@ -50,9 +50,7 @@ public class AccountCreatorService {
   public void create(final long accountNumber) {
     try {
       log.info("starting creation of {} accounts.", accountNumber);
-      log.info("retrieving nonce for creator account.");
       final AtomicLong nonce = NonceUtil.getNonce(web3j, accountCreatorCredentials.getAddress());
-      log.info("creator account nonce: {}", nonce.get());
       for (long i = ACCOUNT_CREATION_START_NUMBER;
           i < ACCOUNT_CREATION_START_NUMBER + accountNumber;
           i++) {

@@ -89,8 +89,10 @@ public class StateStorageService {
           KeyValueStore.load(contractAddress, web3j, transactionManager, contractGasProvider);
       final BigInteger storeSize = keyValueStore.storeSize().send();
       final long startEntryKey = storeSize.longValue();
+      int multiplier = 0;
       for (long i = startEntryKey; i < stateEntriesNumber + startEntryKey; i++) {
-        putSingleEntry(i + stateEntrySize, stateEntrySize, keyValueStore);
+        putSingleEntry(i + (multiplier * stateEntrySize), stateEntrySize, keyValueStore);
+        multiplier++;
       }
     } catch (Throwable e) {
       throw new RuntimeException(e);
