@@ -10,6 +10,7 @@ import net.consensys.tommygun.model.task.TaskStatus;
 import net.consensys.tommygun.model.task.TaskType;
 import net.consensys.tommygun.repository.TaskRepository;
 import net.consensys.tommygun.service.account.AccountCreatorService;
+import net.consensys.tommygun.service.storage.StateStorageService;
 import net.consensys.tommygun.service.task.TaskService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,7 @@ public class FireService {
   @Autowired private TaskService taskService;
   @Autowired private TaskRepository taskRepository;
   @Autowired private AccountCreatorService accountCreator;
+  @Autowired private StateStorageService stateStorageService;
 
   public Task fire(final FireRequest fireRequest) {
     log.info("fire request initiated: {}", fireRequest.toString());
@@ -38,12 +40,22 @@ public class FireService {
                 () ->
                     new RuntimeException(
                         String.format("cannot find root task [%s]", taskID.toString())));
-    final Task accountCreationTask =
-        accountCreator.triggerAccountsCreation(
-            taskID,
-            fireRequest.getAccountNumber(),
-            (subTaskID, newStatus) -> this.onSubTaskStatusChange(rootTask, subTaskID, newStatus));
-    rootTask.addSubTask(accountCreationTask);
+    if (fireRequest.getAccountNumber() > 0) {
+      final Task accountCreationTask =
+          accountCreator.triggerAccountsCreation(
+              taskID,
+              fireRequest.getAccountNumber(),
+              (subTaskID, newStatus) -> this.onSubTaskStatusChange(rootTask, subTaskID, newStatus));
+      rootTask.addSubTask(accountCreationTask);
+    }
+    if (fireRequest.getStateEntriesNumber() > 0) {
+      final Task stateStorageFillerTask =
+          stateStorageService.triggerFillStorage(
+              taskID,
+              fireRequest.getStateEntriesNumber(),
+              (subTaskID, newStatus) -> this.onSubTaskStatusChange(rootTask, subTaskID, newStatus));
+      rootTask.addSubTask(stateStorageFillerTask);
+    }
     taskRepository.save(rootTask);
   }
 

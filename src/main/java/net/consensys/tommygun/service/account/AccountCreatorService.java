@@ -17,11 +17,11 @@ import net.consensys.tommygun.model.task.StatusChangeListener;
 import net.consensys.tommygun.model.task.Task;
 import net.consensys.tommygun.model.task.TaskType;
 import net.consensys.tommygun.service.task.TaskService;
+import net.consensys.tommygun.util.NonceUtil;
 import org.web3j.crypto.Credentials;
 import org.web3j.crypto.RawTransaction;
 import org.web3j.crypto.TransactionEncoder;
 import org.web3j.protocol.Web3j;
-import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.methods.response.EthSendTransaction;
 import org.web3j.utils.Numeric;
 
@@ -51,14 +51,7 @@ public class AccountCreatorService {
     try {
       log.info("starting creation of {} accounts.", accountNumber);
       log.info("retrieving nonce for creator account.");
-      final AtomicLong nonce =
-          new AtomicLong(
-              web3j
-                  .ethGetTransactionCount(
-                      accountCreatorCredentials.getAddress(), DefaultBlockParameterName.LATEST)
-                  .send()
-                  .getTransactionCount()
-                  .longValue());
+      final AtomicLong nonce = NonceUtil.getNonce(web3j, accountCreatorCredentials.getAddress());
       log.info("creator account nonce: {}", nonce.get());
       for (long i = ACCOUNT_CREATION_START_NUMBER;
           i < ACCOUNT_CREATION_START_NUMBER + accountNumber;

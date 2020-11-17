@@ -3,15 +3,24 @@ package net.consensys.tommygun.service.storage;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 import lombok.extern.slf4j.Slf4j;
 import net.consensys.tommygun.boot.TommyGunConfiguration;
 import net.consensys.tommygun.contract.wrapper.KeyValueStore;
+import net.consensys.tommygun.model.state.StorageContractInfo;
+import net.consensys.tommygun.model.state.StorageEntry;
+import net.consensys.tommygun.model.task.StatusChangeListener;
+import net.consensys.tommygun.model.task.Task;
+import net.consensys.tommygun.model.task.TaskType;
+import net.consensys.tommygun.service.task.TaskService;
+import net.consensys.tommygun.util.NonceUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -23,6 +32,8 @@ import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.methods.response.EthGetTransactionReceipt;
 import org.web3j.protocol.core.methods.response.EthSendTransaction;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
+import org.web3j.tx.RawTransactionManager;
+import org.web3j.tx.TransactionManager;
 import org.web3j.tx.gas.DefaultGasProvider;
 import org.web3j.utils.Numeric;
 
@@ -30,12 +41,68 @@ import org.web3j.utils.Numeric;
 @Slf4j
 public class StateStorageService {
   @Autowired private Web3j web3j;
+  @Autowired private StorageEntryGenerator storageEntryGenerator;
 
   @Autowired
   @Qualifier("stateStorageCreatorCredentials")
   private Credentials stateStorageCreatorCredentials;
 
+  @Autowired private TaskService taskService;
+
   @Autowired private TommyGunConfiguration configuration;
+
+  public Task triggerFillStorage(
+      final UUID parentTaskID,
+      final long stateEntriesNumber,
+      final StatusChangeListener statusChangeListener) {
+    final Task task =
+        taskService.newTask(
+            UUID.randomUUID(),
+            String.format(TaskType.FILL_STORAGE.getType(), stateEntriesNumber),
+            () -> this.fillStorage(stateEntriesNumber),
+            Optional.of(parentTaskID));
+    task.addStatusChangeListener(statusChangeListener);
+    return task;
+  }
+
+  public void fillStorage(final long stateEntriesNumber) {
+    try {
+      final String contractAddress =
+          configuration
+              .getKeyValueStoreContractAddress()
+              .orElseThrow(() -> new RuntimeException("no key value store contract address found"));
+      log.info("starting fill storage with {} entries.", stateEntriesNumber);
+      final TransactionManager transactionManager =
+          configuration.getChainID().isPresent()
+              ? new RawTransactionManager(
+                  web3j, stateStorageCreatorCredentials, configuration.getChainID().get())
+              : new RawTransactionManager(web3j, stateStorageCreatorCredentials);
+      log.info("loading key value store contract instance at: {}", contractAddress);
+      log.info("retrieving nonce for creator account.");
+      final AtomicLong nonce =
+          NonceUtil.getNonce(web3j, stateStorageCreatorCredentials.getAddress());
+      log.info("creator account nonce: {}", nonce.get());
+      final KeyValueStore keyValueStore =
+          KeyValueStore.load(contractAddress, web3j, transactionManager, new DefaultGasProvider());
+      final BigInteger storeSize = keyValueStore.storeSize().send();
+      final long startEntryKey = storeSize.longValue() + 1;
+      for (long i = startEntryKey; i < stateEntriesNumber + startEntryKey; i++) {
+        putSingleEntry(i, keyValueStore);
+      }
+    } catch (Throwable e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public void putSingleEntry(final long entryKey, final KeyValueStore keyValueStore)
+      throws Exception {
+    final StorageEntry storageEntry = storageEntryGenerator.newStorageEntry(entryKey);
+    log.info("generated storage entry: {}", storageEntry);
+    final TransactionReceipt transactionReceipt =
+        keyValueStore.set(storageEntry.getKey(), storageEntry.getValue()).sendAsync().get();
+    final String transactionHash = transactionReceipt.getTransactionHash();
+    log.info("transaction hash: {}", transactionHash);
+  }
 
   public String deploySmartContract() {
     try {
@@ -126,5 +193,21 @@ public class StateStorageService {
         log.error("error occurred while polling transaction receipt", e);
       }
     };
+  }
+
+  public StorageContractInfo getStorageContractInfo() throws Exception {
+    return getStorageContractInfo(configuration.getKeyValueStoreContractAddress().orElseThrow());
+  }
+
+  public StorageContractInfo getStorageContractInfo(final String address) throws Exception {
+    final TransactionManager transactionManager =
+        configuration.getChainID().isPresent()
+            ? new RawTransactionManager(
+                web3j, stateStorageCreatorCredentials, configuration.getChainID().get())
+            : new RawTransactionManager(web3j, stateStorageCreatorCredentials);
+    final KeyValueStore keyValueStore =
+        KeyValueStore.load(address, web3j, transactionManager, new DefaultGasProvider());
+    final BigInteger storeSize = keyValueStore.storeSize().send();
+    return StorageContractInfo.builder().stateEntriesNumber(storeSize.longValue()).build();
   }
 }
