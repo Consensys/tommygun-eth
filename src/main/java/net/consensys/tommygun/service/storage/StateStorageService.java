@@ -34,6 +34,7 @@ import org.web3j.protocol.core.methods.response.EthSendTransaction;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.tx.RawTransactionManager;
 import org.web3j.tx.TransactionManager;
+import org.web3j.tx.gas.ContractGasProvider;
 import org.web3j.tx.gas.DefaultGasProvider;
 import org.web3j.utils.Numeric;
 
@@ -42,6 +43,7 @@ import org.web3j.utils.Numeric;
 public class StateStorageService {
   @Autowired private Web3j web3j;
   @Autowired private StorageEntryGenerator storageEntryGenerator;
+  @Autowired ContractGasProvider contractGasProvider;
 
   @Autowired
   @Qualifier("stateStorageCreatorCredentials")
@@ -54,18 +56,19 @@ public class StateStorageService {
   public Task triggerFillStorage(
       final UUID parentTaskID,
       final long stateEntriesNumber,
+      final long stateEntrySize,
       final StatusChangeListener statusChangeListener) {
     final Task task =
         taskService.newTask(
             UUID.randomUUID(),
-            String.format(TaskType.FILL_STORAGE.getType(), stateEntriesNumber),
-            () -> this.fillStorage(stateEntriesNumber),
+            String.format(TaskType.FILL_STORAGE.getType(), stateEntriesNumber, stateEntrySize),
+            () -> this.fillStorage(stateEntriesNumber, stateEntrySize),
             Optional.of(parentTaskID));
     task.addStatusChangeListener(statusChangeListener);
     return task;
   }
 
-  public void fillStorage(final long stateEntriesNumber) {
+  public void fillStorage(final long stateEntriesNumber, final long stateEntrySize) {
     try {
       final String contractAddress =
           configuration
@@ -83,23 +86,30 @@ public class StateStorageService {
           NonceUtil.getNonce(web3j, stateStorageCreatorCredentials.getAddress());
       log.info("creator account nonce: {}", nonce.get());
       final KeyValueStore keyValueStore =
-          KeyValueStore.load(contractAddress, web3j, transactionManager, new DefaultGasProvider());
+          KeyValueStore.load(contractAddress, web3j, transactionManager, contractGasProvider);
       final BigInteger storeSize = keyValueStore.storeSize().send();
-      final long startEntryKey = storeSize.longValue() + 1;
+      final long startEntryKey = storeSize.longValue();
       for (long i = startEntryKey; i < stateEntriesNumber + startEntryKey; i++) {
-        putSingleEntry(i, keyValueStore);
+        putSingleEntry(i + stateEntrySize, stateEntrySize, keyValueStore);
       }
     } catch (Throwable e) {
       throw new RuntimeException(e);
     }
   }
 
-  public void putSingleEntry(final long entryKey, final KeyValueStore keyValueStore)
+  public void putSingleEntry(
+      final long entryKey, final long stateEntrySize, final KeyValueStore keyValueStore)
       throws Exception {
     final StorageEntry storageEntry = storageEntryGenerator.newStorageEntry(entryKey);
     log.info("generated storage entry: {}", storageEntry);
     final TransactionReceipt transactionReceipt =
-        keyValueStore.set(storageEntry.getKey(), storageEntry.getValue()).sendAsync().get();
+        keyValueStore
+            .fill(
+                BigInteger.valueOf(entryKey),
+                BigInteger.valueOf(stateEntrySize),
+                storageEntry.getValue())
+            .sendAsync()
+            .get();
     final String transactionHash = transactionReceipt.getTransactionHash();
     log.info("transaction hash: {}", transactionHash);
   }
@@ -134,7 +144,7 @@ public class StateStorageService {
             DefaultGasProvider.GAS_PRICE,
             DefaultGasProvider.GAS_LIMIT,
             BigInteger.ZERO,
-            KeyValueStore.BINARY);
+            KeyValueStore.SIMPLE_STORE_BINARY);
     final byte[] signedTransaction;
 
     if (configuration.getChainID().isPresent()) {

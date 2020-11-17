@@ -53,6 +53,7 @@ public class FireService {
           stateStorageService.triggerFillStorage(
               taskID,
               fireRequest.getStateEntriesNumber(),
+              fireRequest.getStateEntrySize(),
               (subTaskID, newStatus) -> this.onSubTaskStatusChange(rootTask, subTaskID, newStatus));
       rootTask.addSubTask(stateStorageFillerTask);
     }

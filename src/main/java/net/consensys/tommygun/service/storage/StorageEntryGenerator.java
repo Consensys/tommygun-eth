@@ -1,29 +1,25 @@
 package net.consensys.tommygun.service.storage;
 
-import java.math.BigInteger;
-import java.util.concurrent.ThreadLocalRandom;
+import static net.consensys.tommygun.util.EthereumConfiguration.ADDRESS_LEN_STR;
 
+import java.math.BigInteger;
+
+import com.google.common.base.Strings;
 import net.consensys.tommygun.model.state.StorageEntry;
 import org.springframework.stereotype.Service;
 
 @Service
 public class StorageEntryGenerator {
-  private static final String DEFAULT_STORE_ENTRY_VALUE =
-      "0000000000000000000000000000000000000000";
 
   public StorageEntry newStorageEntry(final long entryKey) {
-    return new StorageEntry(BigInteger.valueOf(entryKey), newStorageEntryValue());
+    return new StorageEntry(BigInteger.valueOf(entryKey), newStorageEntryValue(entryKey));
   }
 
-  public StorageEntry newStorageEntry() {
-    return new StorageEntry(newStorageEntryKey(), newStorageEntryValue());
+  public String newStorageEntryValue(final long key) {
+    return padToAddress(key);
   }
 
-  public BigInteger newStorageEntryKey() {
-    return new BigInteger(256, ThreadLocalRandom.current());
-  }
-
-  public String newStorageEntryValue() {
-    return DEFAULT_STORE_ENTRY_VALUE;
+  public String padToAddress(final long value) {
+    return Strings.padStart(Long.toHexString(value), ADDRESS_LEN_STR, '0');
   }
 }
