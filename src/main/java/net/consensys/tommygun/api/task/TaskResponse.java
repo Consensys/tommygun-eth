@@ -1,10 +1,11 @@
 package net.consensys.tommygun.api.task;
 
+import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
+
 import java.time.Instant;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -18,19 +19,19 @@ public class TaskResponse {
   private String status;
   private String name;
 
-  @JsonInclude(Include.NON_NULL)
+  @JsonInclude(NON_NULL)
   private String parentTaskID;
 
-  @JsonInclude(Include.NON_NULL)
+  @JsonInclude(NON_NULL)
   private String errorMessage;
 
-  @JsonInclude(Include.NON_NULL)
+  @JsonInclude(NON_NULL)
   private Instant startedAt;
 
-  @JsonInclude(Include.NON_NULL)
+  @JsonInclude(NON_NULL)
   private Instant endedAt;
 
-  @JsonInclude(Include.NON_NULL)
+  @JsonInclude(NON_NULL)
   private Long durationMillis;
 
   public TaskResponse(final Task task) {

@@ -3,7 +3,6 @@ package net.consensys.tommygun.api.state;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -13,8 +12,4 @@ public interface StateStorageAPI {
   @Operation(summary = "Deploy key value store smart contract")
   @PostMapping(path = "/contract/deploy")
   DeployStateStorageContractResponse deploy();
-
-  @Operation(summary = "Get the current address of the used key value store smart contract")
-  @GetMapping(path = "/contract")
-  GetStateStorageContractResponse getContractAddress();
 }
