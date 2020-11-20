@@ -2,8 +2,6 @@ package net.consensys.tommygun.boot;
 
 import net.consensys.tommygun.repository.TaskRepository;
 import net.consensys.tommygun.repository.inmem.InMemTaskRepository;
-import net.consensys.tommygun.service.account.AccountCreatorService;
-import net.consensys.tommygun.service.task.TaskService;
 import net.consensys.tommygun.util.LargeGasProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -34,15 +32,6 @@ public class TommyGunBeanFactory {
   @Qualifier("stateStorageCreatorCredentials")
   public Credentials stateStorageCreatorCredentials() {
     return Credentials.create(configuration.getStateStorageCreatorPrivateKey());
-  }
-
-  @Bean
-  public AccountCreatorService accountCreatorService(
-      @Autowired final Web3j web3j,
-      @Autowired final TaskService taskService,
-      @Autowired @Qualifier("accountGeneratorCredentials")
-          final Credentials accountGeneratorCredentials) {
-    return new AccountCreatorService(web3j, accountGeneratorCredentials, taskService);
   }
 
   @Bean

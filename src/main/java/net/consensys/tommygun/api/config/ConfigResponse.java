@@ -23,13 +23,28 @@ public class ConfigResponse {
   @JsonInclude(NON_NULL)
   private String keyValueStoreContractAddress;
 
+  private boolean useSmartContractForAccountCreation;
+
+  @JsonInclude(NON_NULL)
+  private String accountCreatorContractAddress;
+
+  private long accountCreatorContractSlice;
+  private long accountCreatorContractInitialValueEther;
+
   public ConfigResponse(final TommyGunConfiguration configuration) {
     this.rpcUrl = configuration.getRpcUrl();
     configuration.getChainID().ifPresent(chainID -> this.chainID = chainID);
     this.accountCreatorPrivateKey = configuration.getAccountCreatorPrivateKey();
     this.stateStorageCreatorPrivateKey = configuration.getStateStorageCreatorPrivateKey();
+    this.accountCreatorContractSlice = configuration.getAccountCreatorContractSlice();
+    this.useSmartContractForAccountCreation = configuration.isUseSmartContractForAccountCreation();
+    this.accountCreatorContractInitialValueEther =
+        configuration.getAccountCreatorContractInitialValueEther();
     configuration
         .getKeyValueStoreContractAddress()
         .ifPresent(address -> this.keyValueStoreContractAddress = address);
+    configuration
+        .getAccountCreatorContractAddress()
+        .ifPresent(address -> this.accountCreatorContractAddress = address);
   }
 }

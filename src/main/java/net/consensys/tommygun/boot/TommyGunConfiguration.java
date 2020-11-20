@@ -26,7 +26,23 @@ public class TommyGunConfiguration {
   @Value("${key-value-store-contract-address:#{null}}")
   private Optional<String> keyValueStoreContractAddress;
 
+  @Value("${use-smart-contract-for-account-creation:#{true}}")
+  private boolean useSmartContractForAccountCreation;
+
+  @Value("${account-creator-contract-address:#{null}}")
+  private Optional<String> accountCreatorContractAddress;
+
+  @Value("${account-creator-contract-slice:#{100000}}")
+  private long accountCreatorContractSlice;
+
+  @Value("${account-creator-contract-initial-value-ether:#{1}}")
+  private long accountCreatorContractInitialValueEther;
+
   public void setKeyValueStoreContractAddress(final String address) {
     this.keyValueStoreContractAddress = Optional.ofNullable(address);
+  }
+
+  public void setAccountCreatorContractAddress(final String address) {
+    this.accountCreatorContractAddress = Optional.ofNullable(address);
   }
 }

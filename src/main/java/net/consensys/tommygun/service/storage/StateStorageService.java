@@ -9,7 +9,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
 
 import lombok.extern.slf4j.Slf4j;
 import net.consensys.tommygun.boot.TommyGunConfiguration;
@@ -20,7 +19,6 @@ import net.consensys.tommygun.model.task.StatusChangeListener;
 import net.consensys.tommygun.model.task.Task;
 import net.consensys.tommygun.model.task.TaskType;
 import net.consensys.tommygun.service.task.TaskService;
-import net.consensys.tommygun.util.NonceUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -81,10 +79,6 @@ public class StateStorageService {
                   web3j, stateStorageCreatorCredentials, configuration.getChainID().get())
               : new RawTransactionManager(web3j, stateStorageCreatorCredentials);
       log.info("loading key value store contract instance at: {}", contractAddress);
-      log.info("retrieving nonce for creator account.");
-      final AtomicLong nonce =
-          NonceUtil.getNonce(web3j, stateStorageCreatorCredentials.getAddress());
-      log.info("creator account nonce: {}", nonce.get());
       final KeyValueStore keyValueStore =
           KeyValueStore.load(contractAddress, web3j, transactionManager, contractGasProvider);
       final BigInteger storeSize = keyValueStore.storeSize().send();
@@ -218,7 +212,7 @@ public class StateStorageService {
                 web3j, stateStorageCreatorCredentials, configuration.getChainID().get())
             : new RawTransactionManager(web3j, stateStorageCreatorCredentials);
     final KeyValueStore keyValueStore =
-        KeyValueStore.load(address, web3j, transactionManager, new DefaultGasProvider());
+        KeyValueStore.load(address, web3j, transactionManager, contractGasProvider);
     final BigInteger storeSize = keyValueStore.storeSize().send();
     return StorageContractInfo.builder().stateEntriesNumber(storeSize.longValue()).build();
   }
