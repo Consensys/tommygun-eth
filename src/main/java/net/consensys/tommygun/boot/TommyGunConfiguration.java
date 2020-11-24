@@ -38,6 +38,9 @@ public class TommyGunConfiguration {
   @Value("${account-creator-contract-initial-value-ether:#{1}}")
   private long accountCreatorContractInitialValueEther;
 
+  @Value("${account-creator-retries:#{3}}")
+  private long accountCreatorRetries;
+
   public void setKeyValueStoreContractAddress(final String address) {
     this.keyValueStoreContractAddress = Optional.ofNullable(address);
   }

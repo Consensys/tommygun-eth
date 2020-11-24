@@ -28,6 +28,8 @@ public class ConfigResponse {
   @JsonInclude(NON_NULL)
   private String accountCreatorContractAddress;
 
+  private long accountCreatorRetries;
+
   private long accountCreatorContractSlice;
   private long accountCreatorContractInitialValueEther;
 
@@ -37,6 +39,7 @@ public class ConfigResponse {
     this.accountCreatorPrivateKey = configuration.getAccountCreatorPrivateKey();
     this.stateStorageCreatorPrivateKey = configuration.getStateStorageCreatorPrivateKey();
     this.accountCreatorContractSlice = configuration.getAccountCreatorContractSlice();
+    this.accountCreatorRetries = configuration.getAccountCreatorRetries();
     this.useSmartContractForAccountCreation = configuration.isUseSmartContractForAccountCreation();
     this.accountCreatorContractInitialValueEther =
         configuration.getAccountCreatorContractInitialValueEther();

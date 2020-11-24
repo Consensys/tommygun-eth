@@ -10,6 +10,7 @@ import net.consensys.tommygun.boot.TommyGunConfiguration;
 import net.consensys.tommygun.contract.wrapper.AccountCreator;
 import net.consensys.tommygun.model.account.AccountCreatorContractInfo;
 import net.consensys.tommygun.service.SmartContractDeployer;
+import net.consensys.tommygun.service.retry.RecoverableEthereumTransaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -76,7 +77,13 @@ public class AccountCreatorUsingSmartContract {
       final long remainder =
           accountNumber - (iterations * configuration.getAccountCreatorContractSlice());
       for (long i = 0; i < iterations; i++) {
-        createUsingSmartContract(accountCreator, configuration.getAccountCreatorContractSlice());
+        // TODO run with retries instead
+        RecoverableEthereumTransaction.runIgnoreTransactionException(
+            () -> {
+              createUsingSmartContract(
+                  accountCreator, configuration.getAccountCreatorContractSlice());
+              return null;
+            });
       }
       if (remainder > 0) {
         createUsingSmartContract(accountCreator, remainder);
