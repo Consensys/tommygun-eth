@@ -1,11 +1,11 @@
 package net.consensys.tommygun.service.retry;
 
+import java.net.SocketTimeoutException;
+import java.util.concurrent.Callable;
+
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.web3j.protocol.exceptions.TransactionException;
-
-import java.net.SocketTimeoutException;
-import java.util.concurrent.Callable;
 
 @UtilityClass
 @Slf4j

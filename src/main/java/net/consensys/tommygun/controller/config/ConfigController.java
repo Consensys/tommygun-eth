@@ -15,4 +15,16 @@ public class ConfigController implements ConfigAPI {
   public ConfigResponse getConfig() {
     return new ConfigResponse(configuration);
   }
+
+  @Override
+  public ConfigResponse updateKeyValueStoreContractAddress(final String newAddress) {
+    configuration.setKeyValueStoreContractAddress(newAddress);
+    return getConfig();
+  }
+
+  @Override
+  public ConfigResponse updateAccountCreatorContractAddress(final String newAddress) {
+    configuration.setAccountCreatorContractAddress(newAddress);
+    return getConfig();
+  }
 }
